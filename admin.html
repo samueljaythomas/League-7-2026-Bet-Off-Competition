@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bet-Off admin</title>
+<meta name="theme-color" content="#080b0a">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:18px 13px 60px;background:#080b0a;color:#eef4f0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:520px;margin:0 auto}
+  h1{font-size:22px;font-weight:800;margin:0 0 4px}
+  .sub{font-size:12px;color:#7d8c85;margin-bottom:16px}
+  .card{background:#111714;border:1px solid #1f2a25;border-radius:14px;
+    padding:14px;margin-bottom:12px}
+  .card h2{margin:0 0 10px;font-size:15px;font-weight:700}
+  label{display:block;font-size:11px;color:#7d8c85;margin-bottom:4px;
+    text-transform:uppercase;letter-spacing:.05em}
+  input,select,textarea{width:100%;background:#0c110f;border:1px solid #253029;
+    border-radius:9px;color:#eef4f0;font-size:15px;font-family:inherit;
+    padding:10px 11px;margin-bottom:10px}
+  select{appearance:none;-webkit-appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,#7d8c85 50%),
+      linear-gradient(135deg,#7d8c85 50%,transparent 50%);
+    background-position:calc(100% - 18px) 18px,calc(100% - 13px) 18px;
+    background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+  textarea{min-height:160px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px}
+  button{background:#1a9c63;color:#fff;border:none;border-radius:9px;
+    padding:11px 14px;font-size:14px;font-weight:700;font-family:inherit;width:100%}
+  button.ghost{background:#1f2a25;color:#c6d3cc}
+  button.danger{background:#3d1620;color:#ff8fa3}
+  .row2{display:flex;gap:9px}.row2>*{flex:1}
+  .betline{border-top:1px solid #1a221e;padding-top:11px;margin-top:11px}
+  .betline:first-of-type{border-top:none;padding-top:0;margin-top:0}
+  .bl-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+  .bl-head span{font-size:11px;color:#7d8c85;flex:1}
+  .bl-head button{width:auto;padding:4px 9px;font-size:11px;background:#2a1a1f;color:#ff8fa3}
+  .tally{font-size:11.5px;color:#7d8c85;margin-top:8px}
+  .ok{color:#5ee79f}.warn{color:#ffab73}
+  .msg{font-size:12px;padding:9px 11px;border-radius:9px;margin-bottom:10px;display:none}
+  .msg.show{display:block}
+  .msg.good{background:#0f3d28;color:#5ee79f}
+  .msg.bad{background:#3d1620;color:#ff8fa3}
+  .people{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+  .people button{width:auto;padding:7px 11px;font-size:12.5px;background:#1f2a25;color:#9fb0a7}
+  .people button.on{background:#1a9c63;color:#fff}
+  .people button.done{background:#14332a;color:#5ee79f}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Bet-Off admin</h1>
+  <div class="sub">Enter everyone's bets, then export and commit bets.json</div>
+
+  <div class="msg" id="msg"></div>
+
+  <div class="card">
+    <h2>1. Load the slate</h2>
+    <label>Game date</label>
+    <input type="date" id="date" value="2026-09-05">
+    <button id="load">Load games from ESPN</button>
+    <div class="tally" id="slate">No games loaded yet.</div>
+  </div>
+
+  <div class="card">
+    <h2>2. Pick a person</h2>
+    <div class="people" id="people"></div>
+    <div id="editor"></div>
+  </div>
+
+  <div class="card">
+    <h2>3. Export</h2>
+    <div class="tally" id="summary"></div>
+    <button id="export" style="margin-top:10px">Generate bets.json</button>
+    <textarea id="out" placeholder="Output appears here — copy it into bets.json"></textarea>
+    <button class="ghost" id="copy">Copy to clipboard</button>
+    <div style="height:9px"></div>
+    <label>Import existing bets.json to edit</label>
+    <textarea id="in" placeholder="Paste an existing bets.json here"></textarea>
+    <button class="ghost" id="import">Import</button>
+    <div style="height:9px"></div>
+    <button class="danger" id="clear">Clear all bets</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  var PEOPLE = ["Sam","Dan","Cody","Fitz","Bret","Barreto","Seth","Kirk","Doug","Kyle"];
+  var ESPN = "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard";
+  var KEY = "betoff-admin-v1";
+  var state = { date: "20260905", bets: [] };
+  var slate = [];
+  var current = PEOPLE[0];
+
+  function msg(text, good) {
+    var m = document.getElementById("msg");
+    m.textContent = text;
+    m.className = "msg show " + (good ? "good" : "bad");
+    setTimeout(function () { m.className = "msg"; }, 4000);
+  }
+
+  function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+  function load() {
+    try {
+      var s = JSON.parse(localStorage.getItem(KEY));
+      if (s && s.bets) state = s;
+    } catch (e) {}
+  }
+
+  function loadSlate() {
+    var d = document.getElementById("date").value.replace(/-/g, "");
+    state.date = d;
+    document.getElementById("slate").textContent = "Loading…";
+    fetch(ESPN + "?dates=" + d + "&groups=80&limit=300")
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        slate = (j.events || []).map(function (ev) {
+          var comp = (ev.competitions || [])[0] || {};
+          var teams = (comp.competitors || []).map(function (c) {
+            return { id: String(c.team.id),
+                     abbr: c.team.abbreviation || c.team.shortDisplayName,
+                     name: c.team.shortDisplayName || c.team.displayName,
+                     home: c.homeAway === "home" };
+          });
+          return { id: String(ev.id), short: ev.shortName || ev.name,
+                   date: ev.date, teams: teams };
+        }).sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+        document.getElementById("slate").innerHTML =
+          '<span class="ok">' + slate.length + " games loaded for " + d + "</span>";
+        save(); renderEditor();
+      })
+      .catch(function () {
+        document.getElementById("slate").innerHTML =
+          '<span class="warn">Could not reach ESPN. Check the date and try again.</span>';
+      });
+  }
+
+  function renderPeople() {
+    document.getElementById("people").innerHTML = PEOPLE.map(function (p) {
+      var n = state.bets.filter(function (b) { return b.person === p; }).length;
+      var cls = p === current ? "on" : (n >= 5 ? "done" : "");
+      return '<button class="' + cls + '" data-p="' + p + '">' + p +
+        (n ? " " + n : "") + '</button>';
+    }).join("");
+    document.querySelectorAll("#people button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        current = b.dataset.p; renderPeople(); renderEditor();
+      });
+    });
+  }
+
+  function gameOptions(sel) {
+    return '<option value="">— pick a game —</option>' + slate.map(function (g) {
+      var t = new Date(g.date).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+      return '<option value="' + g.id + '"' + (g.id === sel ? " selected" : "") +
+        '>' + g.short + "  (" + t + ")</option>";
+    }).join("");
+  }
+
+  function teamOptions(gameId, sel) {
+    var g = slate.filter(function (x) { return x.id === gameId; })[0];
+    if (!g) return '<option value="">— pick a game first —</option>';
+    return '<option value="">— pick a side —</option>' + g.teams.map(function (t) {
+      return '<option value="' + t.id + '"' + (t.id === sel ? " selected" : "") +
+        '>' + t.name + (t.home ? " (H)" : " (A)") + "</option>";
+    }).join("");
+  }
+
+  function renderEditor() {
+    var mine = state.bets.filter(function (b) { return b.person === current; });
+    while (mine.length < 5) {
+      var nb = { person: current, gameId: "", teamId: "", oppId: "",
+                 teamAbbr: "", line: "", toWin: "" };
+      state.bets.push(nb); mine.push(nb);
+    }
+    var html = '<div style="font-size:13px;color:#7d8c85;margin-bottom:10px">' +
+      'Five bets for <b style="color:#eef4f0">' + current + '</b></div>';
+    mine.forEach(function (b, i) {
+      var idx = state.bets.indexOf(b);
+      html += '<div class="betline"><div class="bl-head"><span>Bet ' + (i + 1) +
+        '</span><button data-clear="' + idx + '">clear</button></div>' +
+        '<label>Game</label><select data-f="gameId" data-i="' + idx + '">' +
+        gameOptions(b.gameId) + '</select>' +
+        '<label>Side</label><select data-f="teamId" data-i="' + idx + '">' +
+        teamOptions(b.gameId, b.teamId) + '</select>' +
+        '<div class="row2"><div><label>Line (e.g. -13.5)</label>' +
+        '<input type="text" inputmode="decimal" data-f="line" data-i="' + idx +
+        '" value="' + (b.line === "" ? "" : b.line) + '" placeholder="+7.5"></div>' +
+        '<div><label>To win ($)</label>' +
+        '<input type="text" inputmode="decimal" data-f="toWin" data-i="' + idx +
+        '" value="' + (b.toWin === "" ? "" : b.toWin) + '" placeholder="12.50"></div>' +
+        '</div></div>';
+    });
+    document.getElementById("editor").innerHTML = html;
+
+    document.querySelectorAll("#editor select, #editor input").forEach(function (el) {
+      el.addEventListener("change", function () {
+        var b = state.bets[Number(el.dataset.i)];
+        var f = el.dataset.f;
+        b[f] = el.value;
+        if (f === "gameId") { b.teamId = ""; b.oppId = ""; b.teamAbbr = ""; }
+        if (f === "teamId") {
+          var g = slate.filter(function (x) { return x.id === b.gameId; })[0];
+          if (g) {
+            var me = g.teams.filter(function (t) { return t.id === b.teamId; })[0];
+            var op = g.teams.filter(function (t) { return t.id !== b.teamId; })[0];
+            b.teamAbbr = me ? me.abbr : "";
+            b.oppId = op ? op.id : "";
+          }
+        }
+        save();
+        if (f === "gameId" || f === "teamId") renderEditor();
+        renderPeople(); renderSummary();
+      });
+    });
+    document.querySelectorAll("#editor [data-clear]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var b = state.bets[Number(btn.dataset.clear)];
+        b.gameId = b.teamId = b.oppId = b.teamAbbr = ""; b.line = ""; b.toWin = "";
+        save(); renderEditor(); renderPeople(); renderSummary();
+      });
+    });
+    renderSummary();
+  }
+
+  function complete(b) {
+    return b.gameId && b.teamId && b.oppId && b.line !== "" && b.toWin !== "" &&
+      !isNaN(Number(b.line)) && !isNaN(Number(b.toWin));
+  }
+
+  function renderSummary() {
+    var done = state.bets.filter(complete);
+    var per = PEOPLE.map(function (p) {
+      var n = done.filter(function (b) { return b.person === p; }).length;
+      return n === 5 ? null : p + " (" + n + ")";
+    }).filter(Boolean);
+    document.getElementById("summary").innerHTML = done.length + " of 50 bets complete." +
+      (per.length ? ' <span class="warn">Outstanding: ' + per.join(", ") + "</span>"
+                  : ' <span class="ok">Everyone is in.</span>');
+  }
+
+  document.getElementById("load").addEventListener("click", loadSlate);
+
+  document.getElementById("export").addEventListener("click", function () {
+    var out = {
+      event: "Draft Order Bet-Off",
+      date: state.date,
+      people: PEOPLE,
+      bets: state.bets.filter(complete).map(function (b) {
+        return { person: b.person, gameId: b.gameId, teamId: b.teamId,
+                 oppId: b.oppId, teamAbbr: b.teamAbbr,
+                 line: Number(b.line), toWin: Number(b.toWin) };
+      })
+    };
+    document.getElementById("out").value = JSON.stringify(out, null, 2);
+    msg(out.bets.length + " bets exported. Copy into bets.json.", true);
+  });
+
+  document.getElementById("copy").addEventListener("click", function () {
+    var ta = document.getElementById("out");
+    if (!ta.value) { msg("Generate it first.", false); return; }
+    ta.select();
+    navigator.clipboard.writeText(ta.value).then(function () {
+      msg("Copied.", true);
+    }).catch(function () { msg("Select and copy manually.", false); });
+  });
+
+  document.getElementById("import").addEventListener("click", function () {
+    try {
+      var j = JSON.parse(document.getElementById("in").value);
+      state.date = j.date || state.date;
+      state.bets = (j.bets || []).map(function (b) {
+        return { person: b.person, gameId: String(b.gameId), teamId: String(b.teamId),
+                 oppId: String(b.oppId), teamAbbr: b.teamAbbr,
+                 line: b.line, toWin: b.toWin };
+      });
+      if (j.date) {
+        document.getElementById("date").value =
+          j.date.slice(0, 4) + "-" + j.date.slice(4, 6) + "-" + j.date.slice(6, 8);
+      }
+      save(); renderPeople(); renderEditor();
+      msg("Imported " + state.bets.length + " bets.", true);
+    } catch (e) { msg("That isn't valid JSON.", false); }
+  });
+
+  document.getElementById("clear").addEventListener("click", function () {
+    if (!confirm("Delete every bet you've entered?")) return;
+    state.bets = []; save(); renderPeople(); renderEditor();
+    msg("Cleared.", true);
+  });
+
+  load();
+  if (state.date) {
+    document.getElementById("date").value =
+      state.date.slice(0, 4) + "-" + state.date.slice(4, 6) + "-" + state.date.slice(6, 8);
+  }
+  renderPeople(); renderEditor();
+  loadSlate();
+})();
+</script>
+</body>
+</html>
