@@ -1,0 +1,8 @@
+{
+  "event": "Draft Order Bet-Off",
+  "date": "20260905",
+  "stake": 5,
+  "scoring": "winnings",
+  "people": ["Sam", "Dan", "Cody", "Fitz", "Bret", "Barreto", "Seth", "Kirk", "Doug", "Kyle"],
+  "bets": []
+}
