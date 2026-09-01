@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Draft Order Bet-Off</title>
+<meta name="theme-color" content="#080b0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bet-Off">
+<style>
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    padding:calc(18px + env(safe-area-inset-top)) 13px calc(40px + env(safe-area-inset-bottom));
+    background:radial-gradient(900px 400px at 50% -180px,#0d3327 0%,transparent 70%),#080b0a;
+    color:#eef4f0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:470px;margin:0 auto}
+  h1{font-size:24px;font-weight:800;letter-spacing:-.025em;margin:0}
+  .bar{display:flex;align-items:center;gap:9px;margin:8px 0 15px;font-size:11.5px;color:#7d8c85}
+  .dot{width:7px;height:7px;border-radius:50%;background:#3a4a43;flex:none}
+  .dot.live{background:#28d17c;box-shadow:0 0 0 0 rgba(40,209,124,.7);animation:p 2s infinite}
+  @keyframes p{70%{box-shadow:0 0 0 7px rgba(40,209,124,0)}100%{box-shadow:0 0 0 0 rgba(40,209,124,0)}}
+  .bar span{flex:1}
+  .rf{width:28px;height:28px;border-radius:8px;background:#111714;border:1px solid #1f2a25;
+    color:#7d8c85;font-size:15px;font-family:inherit;flex:none}
+  .tabs{display:flex;gap:4px;background:#111714;border:1px solid #1f2a25;border-radius:12px;
+    padding:4px;margin-bottom:14px}
+  .tab{flex:1;padding:9px 4px;border-radius:9px;font-size:12.5px;font-weight:600;
+    color:#7d8c85;border:none;background:none;font-family:inherit}
+  .tab.on{background:#1a9c63;color:#fff}
+  .pane{display:none}.pane.on{display:block}
+  .card{background:#111714;border:1px solid #1f2a25;border-radius:15px;overflow:hidden;
+    margin-bottom:13px}
+  .hd{padding:13px 15px 10px;border-bottom:1px solid #1f2a25}
+  .hd h2{margin:0;font-size:16px;font-weight:700}
+  .hd p{margin:3px 0 0;font-size:11.5px;color:#7d8c85}
+  .lb{display:flex;align-items:center;gap:11px;padding:12px 14px;border-bottom:1px solid #171f1b;
+    border-left:3px solid transparent}
+  .lb:last-child{border-bottom:none}
+  .lb.p1{border-left-color:#f2c14e;background:linear-gradient(90deg,rgba(242,193,78,.09),transparent 60%)}
+  .lb.p2{border-left-color:#b9c4cc}.lb.p3{border-left-color:#c08a52}
+  .rk{width:20px;font-size:15px;font-weight:800;color:#7d8c85;flex:none}
+  .lb.p1 .rk{color:#f2c14e}
+  .nm{flex:1;min-width:0}
+  .nm b{font-size:15px;font-weight:700;display:block}
+  .nm i{font-style:normal;font-size:10.5px;color:#7d8c85;display:block;margin-top:2px}
+  .amt{text-align:right;flex:none}
+  .amt b{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;display:block}
+  .amt i{font-style:normal;font-size:9.5px;color:#7d8c85}
+  .live-amt{color:#28d17c}
+  .bet{display:flex;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid #171f1b}
+  .bet:last-child{border-bottom:none}
+  .pill{font-size:8.5px;font-weight:800;padding:3px 6px;border-radius:5px;flex:none;
+    width:52px;text-align:center;letter-spacing:.03em}
+  .won{background:#0f3d28;color:#5ee79f}
+  .lost{background:#3d1620;color:#ff8fa3}
+  .cover{background:#123a2c;color:#3fd48f}
+  .notcover{background:#3a2418;color:#ffab73}
+  .pend{background:#1c2620;color:#7d8c85}
+  .push{background:#1e2733;color:#9fb6d0}
+  .bi{flex:1;min-width:0}
+  .bi b{font-size:13.5px;font-weight:600;display:block;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis}
+  .bi i{font-style:normal;font-size:10.5px;color:#7d8c85;display:block;margin-top:1px}
+  .bw{text-align:right;flex:none;font-size:14px;font-weight:700;
+    font-variant-numeric:tabular-nums;min-width:48px}
+  .bw.dim{color:#4a5751}
+  .gm{padding:12px 14px;border-bottom:1px solid #171f1b}
+  .gm:last-child{border-bottom:none}
+  .gt{display:flex;align-items:center;gap:8px;font-size:13.5px}
+  .gt b{flex:1;font-weight:600}
+  .gsc{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
+  .gst{font-size:10.5px;color:#7d8c85;margin-top:4px}
+  .gst.inplay{color:#28d17c}
+  .empty{padding:32px 18px;text-align:center;font-size:13px;color:#7d8c85}
+  .seg{display:flex;gap:4px;background:#111714;border:1px solid #1f2a25;border-radius:10px;
+    padding:3px;margin-bottom:12px}
+  .seg button{flex:1;padding:7px;border-radius:7px;font-size:12px;font-weight:600;
+    color:#7d8c85;border:none;background:none;font-family:inherit}
+  .seg button.on{background:#1f2a25;color:#eef4f0}
+  .note{padding:11px 15px;font-size:11px;color:#7d8c85;line-height:1.45;
+    border-top:1px solid #171f1b}
+  footer{text-align:center;font-size:10.5px;color:#3f4c46;margin-top:22px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Draft Order Bet-Off</h1>
+  <div class="bar"><i class="dot" id="dot"></i><span id="status">Loading…</span>
+    <button class="rf" id="rf">&#8635;</button></div>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="board">Leaderboard</button>
+    <button class="tab" data-tab="bets">All bets</button>
+    <button class="tab" data-tab="games">Games</button>
+  </div>
+
+  <div class="pane on" data-pane="board"><div id="board"></div></div>
+  <div class="pane" data-pane="bets">
+    <div class="seg"><button class="on" data-by="person">By person</button>
+      <button data-by="game">By game</button></div>
+    <div id="bets"></div>
+  </div>
+  <div class="pane" data-pane="games"><div id="games"></div></div>
+
+  <footer>Scores from ESPN &middot; refreshes every 45s</footer>
+</div>
+
+<script>
+(function () {
+  var PEOPLE = ["Sam","Dan","Cody","Fitz","Bret","Barreto","Seth","Kirk","Doug","Kyle"];
+  var ESPN = "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard";
+  var POLL = 45000;
+  var STAKE = 5;              // wager per bet
+  var COUNT_STAKE = false;    // set "scoring":"returned" in bets.json to include it
+  var data = null, games = {}, lastOk = null, timer = null, groupBy = "person";
+
+  /* ---------- bet evaluation ---------- */
+  // Returns: pending | won | lost | push | cover | notcover  (+ margin info)
+  function evaluate(bet, game) {
+    if (!game) return { state: "pending", label: "NO GAME", note: "game not found" };
+    var me = game.teams[bet.teamId], opp = game.teams[bet.oppId];
+    if (!me || !opp) return { state: "pending", label: "?", note: "team not in game" };
+
+    if (game.state === "pre") {
+      return { state: "pending", label: "PENDING", note: game.startText };
+    }
+    var margin = me.score - opp.score;
+    var edge = margin + Number(bet.line);
+    var final = game.state === "post";
+
+    if (Math.abs(edge) < 1e-9) {
+      return final
+        ? { state: "push", label: "PUSH", note: "line landed exactly" }
+        : { state: "notcover", label: "ON LINE", note: "sitting on the number" };
+    }
+    if (edge > 0) {
+      return final
+        ? { state: "won", label: "WON", note: "covered by " + fmtNum(edge) }
+        : { state: "cover", label: "COVERING", note: "up " + fmtNum(edge) + " on the line" };
+    }
+    return final
+      ? { state: "lost", label: "LOST", note: "missed by " + fmtNum(-edge) }
+      : { state: "notcover", label: "NEEDS " + fmtNum(-edge), note: "short by " + fmtNum(-edge) };
+  }
+
+  function fmtNum(n) { return (Math.round(n * 10) / 10).toString(); }
+  function payout(b) { return Number(b.toWin) + (COUNT_STAKE ? STAKE : 0); }
+  function money(n) {
+    return "$" + n.toFixed(2).replace(/\.00$/, "");
+  }
+  function sign(n) { return (n > 0 ? "+" : "") + n; }
+
+  /* ---------- fetching ---------- */
+  function loadBets() {
+    return fetch("bets.json?t=" + Date.now()).then(function (r) {
+      if (!r.ok) throw new Error("bets.json missing");
+      return r.json();
+    });
+  }
+
+  function loadGames(date) {
+    var url = ESPN + "?dates=" + date + "&groups=80&limit=300";
+    return fetch(url).then(function (r) { return r.json(); }).then(function (j) {
+      var out = {};
+      (j.events || []).forEach(function (ev) {
+        var comp = (ev.competitions || [])[0];
+        if (!comp) return;
+        var teams = {}, list = [];
+        (comp.competitors || []).forEach(function (c) {
+          var t = {
+            id: String(c.team.id),
+            abbr: c.team.abbreviation || c.team.shortDisplayName,
+            name: c.team.shortDisplayName || c.team.displayName,
+            score: Number(c.score || 0),
+            home: c.homeAway === "home"
+          };
+          teams[t.id] = t;
+          list.push(t);
+        });
+        list.forEach(function (t, i) { t.opp = list[1 - i]; });
+        var st = ev.status || comp.status || {};
+        out[String(ev.id)] = {
+          id: String(ev.id),
+          short: ev.shortName || ev.name,
+          teams: teams,
+          list: list,
+          state: (st.type || {}).state || "pre",
+          detail: (st.type || {}).shortDetail || "",
+          startText: new Date(ev.date).toLocaleTimeString([], {
+            hour: "numeric", minute: "2-digit"
+          })
+        };
+      });
+      return out;
+    });
+  }
+
+  /* ---------- rendering ---------- */
+  function computeTotals() {
+    var byPerson = {};
+    PEOPLE.forEach(function (p) {
+      byPerson[p] = { name: p, bets: [], banked: 0, live: 0, won: 0, lost: 0,
+                      covering: 0, pending: 0, push: 0 };
+    });
+    (data.bets || []).forEach(function (b) {
+      var g = games[b.gameId];
+      var res = evaluate(b, g);
+      var row = { bet: b, game: g, res: res };
+      var p = byPerson[b.person];
+      if (!p) { byPerson[b.person] = p = { name: b.person, bets: [], banked: 0,
+        live: 0, won: 0, lost: 0, covering: 0, pending: 0, push: 0 }; }
+      p.bets.push(row);
+      if (res.state === "won") { p.banked += payout(b); p.won++; }
+      else if (res.state === "cover") { p.live += payout(b); p.covering++; }
+      else if (res.state === "push") { p.banked += COUNT_STAKE ? STAKE : 0; p.push++; }
+      else if (res.state === "lost") p.lost++;
+      else if (res.state === "pending") p.pending++;
+    });
+    var list = Object.keys(byPerson).map(function (k) { return byPerson[k]; });
+    list.forEach(function (p) { p.total = p.banked + p.live; });
+    list.sort(function (a, b) {
+      if (b.total !== a.total) return b.total - a.total;
+      var aw = a.won + a.covering, bw = b.won + b.covering;
+      if (bw !== aw) return bw - aw;                       // tiebreak: most winners
+      var am = Math.max.apply(null, a.bets.map(function (r) {
+        return r.res.state === "won" || r.res.state === "cover" ? payout(r.bet) : 0;
+      }).concat([0]));
+      var bm = Math.max.apply(null, b.bets.map(function (r) {
+        return r.res.state === "won" || r.res.state === "cover" ? payout(r.bet) : 0;
+      }).concat([0]));
+      if (bm !== am) return bm - am;                       // then biggest single hit
+      return a.name.localeCompare(b.name);
+    });
+    var rank = 0, lastKey = null;
+    list.forEach(function (p, i) {
+      var key = p.total + "|" + (p.won + p.covering);
+      if (key !== lastKey) { rank = i + 1; lastKey = key; }
+      p.rank = rank;
+    });
+    return list;
+  }
+
+  function renderBoard(list) {
+    var anyBets = (data.bets || []).length > 0;
+    if (!anyBets) {
+      document.getElementById("board").innerHTML =
+        '<div class="card"><div class="empty">No bets submitted yet.<br>' +
+        'Add them in the admin page.</div></div>';
+      return;
+    }
+    var rows = list.map(function (p) {
+      var parts = [];
+      if (p.won) parts.push(p.won + " won");
+      if (p.covering) parts.push(p.covering + " covering");
+      if (p.push) parts.push(p.push + " push");
+      if (p.lost) parts.push(p.lost + " lost");
+      if (p.pending) parts.push(p.pending + " to play");
+      var liveBit = p.live > 0
+        ? '<i>' + money(p.banked) + ' banked <span class="live-amt">+ ' +
+          money(p.live) + ' live</span></i>'
+        : '<i>' + (parts.join(" &middot; ") || "no bets in") + '</i>';
+      return '<div class="lb p' + (p.rank <= 3 ? p.rank : 0) + '">' +
+        '<div class="rk">' + p.rank + '</div>' +
+        '<div class="nm"><b>' + p.name + '</b>' +
+        (p.live > 0 ? liveBit : '<i>' + (parts.join(" &middot; ") || "no bets in") + '</i>') +
+        '</div><div class="amt"><b>' + money(p.total) + '</b><i>' +
+        (p.live > 0 ? "incl. live" : "final") + '</i></div></div>';
+    }).join("");
+    document.getElementById("board").innerHTML =
+      '<div class="card"><div class="hd"><h2>Standings</h2>' +
+      '<p>' + (COUNT_STAKE ? 'Winnings plus returned stake' : 'Winnings only') +
+      ' &middot; losses cost nothing</p></div>' + rows +
+      '<div class="note">Draft order runs top to bottom. Live figures count bets ' +
+      'currently covering but not yet final. ' +
+      (COUNT_STAKE ? 'Each win also returns the $' + STAKE + ' stake. ' : '') +
+      'Ties break on most winning bets, then biggest single payout.</div></div>';
+  }
+
+  function betRow(r, showPerson) {
+    var b = r.bet, g = r.game, res = r.res;
+    var cls = res.state === "won" ? "won" : res.state === "lost" ? "lost"
+      : res.state === "cover" ? "cover" : res.state === "push" ? "push"
+      : res.state === "notcover" ? "notcover" : "pend";
+    var score = g && g.state !== "pre"
+      ? g.list.map(function (t) { return t.abbr + " " + t.score; }).join(" – ")
+      : (g ? g.short : "");
+    var dim = (res.state === "won" || res.state === "cover") ? "" : " dim";
+    return '<div class="bet"><span class="pill ' + cls + '">' + res.label + '</span>' +
+      '<div class="bi"><b>' + (showPerson ? b.person + " &middot; " : "") +
+      b.teamAbbr + " " + sign(b.line) + '</b>' +
+      '<i>' + score + (res.note ? " &middot; " + res.note : "") + '</i></div>' +
+      '<div class="bw' + dim + '">' + money(payout(b)) + '</div></div>';
+  }
+
+  function renderBets(list) {
+    var host = document.getElementById("bets");
+    if (!(data.bets || []).length) {
+      host.innerHTML = '<div class="card"><div class="empty">No bets yet.</div></div>';
+      return;
+    }
+    if (groupBy === "person") {
+      host.innerHTML = list.map(function (p) {
+        if (!p.bets.length) return "";
+        return '<div class="card"><div class="hd"><h2>' + p.name + '</h2>' +
+          '<p>' + money(p.total) + ' &middot; ' + p.bets.length + ' bets</p></div>' +
+          p.bets.map(function (r) { return betRow(r, false); }).join("") + '</div>';
+      }).join("");
+    } else {
+      var byGame = {};
+      (data.bets || []).forEach(function (b) {
+        (byGame[b.gameId] = byGame[b.gameId] || []).push(b);
+      });
+      host.innerHTML = Object.keys(byGame).map(function (gid) {
+        var g = games[gid];
+        var rows = byGame[gid].map(function (b) {
+          return betRow({ bet: b, game: g, res: evaluate(b, g) }, true);
+        }).join("");
+        var sub = g ? (g.state === "pre" ? g.startText : g.detail) : "unknown game";
+        return '<div class="card"><div class="hd"><h2>' +
+          (g ? g.short : gid) + '</h2><p>' + sub + '</p></div>' + rows + '</div>';
+      }).join("");
+    }
+  }
+
+  function renderGames() {
+    var ids = {};
+    (data.bets || []).forEach(function (b) { ids[b.gameId] = true; });
+    var keys = Object.keys(ids);
+    if (!keys.length) {
+      document.getElementById("games").innerHTML =
+        '<div class="card"><div class="empty">No games yet.</div></div>';
+      return;
+    }
+    var cards = keys.map(function (gid) {
+      var g = games[gid];
+      if (!g) return '<div class="gm"><div class="gt"><b>Unknown game ' + gid +
+        '</b></div><div class="gst">not on the scoreboard</div></div>';
+      var rows = g.list.map(function (t) {
+        return '<div class="gt"><b>' + t.name + '</b><span class="gsc">' +
+          (g.state === "pre" ? "" : t.score) + '</span></div>';
+      }).join("");
+      var st = g.state === "pre" ? g.startText : g.detail;
+      return '<div class="gm">' + rows + '<div class="gst' +
+        (g.state === "in" ? " inplay" : "") + '">' + st + '</div></div>';
+    }).join("");
+    document.getElementById("games").innerHTML =
+      '<div class="card"><div class="hd"><h2>Games in play</h2>' +
+      '<p>' + keys.length + ' games with money on them</p></div>' + cards + '</div>';
+  }
+
+  function render() {
+    var list = computeTotals();
+    renderBoard(list);
+    renderBets(list);
+    renderGames();
+    var live = Object.keys(games).some(function (k) {
+      var g = games[k]; return g.state === "in";
+    });
+    document.getElementById("dot").className = "dot" + (live ? " live" : "");
+    var t = lastOk ? lastOk.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "—";
+    document.getElementById("status").textContent =
+      (live ? "Live · " : "") + "updated " + t;
+  }
+
+  function refresh() {
+    if (!data) return;
+    loadGames(data.date).then(function (g) {
+      games = g; lastOk = new Date(); render();
+    }).catch(function (e) {
+      document.getElementById("status").textContent = "Score fetch failed — retrying";
+    });
+  }
+
+  /* ---------- boot ---------- */
+  document.querySelectorAll(".tab").forEach(function (t) {
+    t.addEventListener("click", function () {
+      document.querySelectorAll(".tab").forEach(function (x) {
+        x.classList.toggle("on", x === t);
+      });
+      document.querySelectorAll(".pane").forEach(function (p) {
+        p.classList.toggle("on", p.dataset.pane === t.dataset.tab);
+      });
+      window.scrollTo(0, 0);
+    });
+  });
+  document.querySelectorAll(".seg button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      groupBy = b.dataset.by;
+      document.querySelectorAll(".seg button").forEach(function (x) {
+        x.classList.toggle("on", x === b);
+      });
+      renderBets(computeTotals());
+    });
+  });
+  document.getElementById("rf").addEventListener("click", refresh);
+
+  loadBets().then(function (d) {
+    data = d;
+    if (d.people && d.people.length) PEOPLE = d.people;
+    if (d.scoring === "returned") COUNT_STAKE = true;
+    if (d.stake) STAKE = Number(d.stake);
+    refresh();
+    timer = setInterval(refresh, POLL);
+  }).catch(function (e) {
+    document.getElementById("status").textContent = "Could not load bets.json";
+    document.getElementById("board").innerHTML =
+      '<div class="card"><div class="empty">bets.json not found.<br>' +
+      'Create it with the admin page.</div></div>';
+  });
+})();
+</script>
+</body>
+</html>
