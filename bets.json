@@ -1,8 +1,63 @@
 {
   "event": "Draft Order Bet-Off",
   "date": "20260905",
-  "stake": 5,
-  "scoring": "returned",
-  "people": ["Sam", "Dan", "Cody", "Fitz", "Bret", "Barreto", "Seth", "Kirk", "Doug", "Kyle"],
-  "bets": []
+  "people": [
+    "Sam",
+    "Dan",
+    "Cody",
+    "Fitz",
+    "Bret",
+    "Barreto",
+    "Seth",
+    "Kirk",
+    "Doug",
+    "Kyle"
+  ],
+  "bets": [
+    {
+      "person": "Sam",
+      "gameId": "401856634",
+      "teamId": "151",
+      "oppId": "333",
+      "teamAbbr": "ECU",
+      "line": 28.5,
+      "toWin": 9.16
+    },
+    {
+      "person": "Sam",
+      "gameId": "401858430",
+      "teamId": "195",
+      "oppId": "158",
+      "teamAbbr": "OHIO",
+      "line": 23.5,
+      "toWin": 9.9
+    },
+    {
+      "person": "Sam",
+      "gameId": "401856665",
+      "teamId": "2309",
+      "oppId": "2579",
+      "teamAbbr": "KENT",
+      "line": 35.5,
+      "toWin": 9.62
+    },
+    {
+      "person": "Sam",
+      "gameId": "401856772",
+      "teamId": "202",
+      "oppId": "197",
+      "teamAbbr": "TLSA",
+      "line": 14.5,
+      "toWin": 8.7
+    },
+    {
+      "person": "Sam",
+      "gameId": "401856780",
+      "teamId": "324",
+      "oppId": "277",
+      "teamAbbr": "CCU",
+      "line": 21,
+      "toWin": 9.62
+    }
+  ]
 }
