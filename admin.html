@@ -31,6 +31,12 @@
   button.ghost{background:#1f2a25;color:#c6d3cc}
   button.danger{background:#3d1620;color:#ff8fa3}
   .row2{display:flex;gap:9px}.row2>*{flex:1}
+  .signed{display:flex;gap:7px;margin-bottom:10px}
+  .signed input{flex:1;margin-bottom:0}
+  .sgn{width:48px;flex:none;height:42px;padding:0;font-size:20px;font-weight:800;
+    background:#1f2a25;color:#9fb0a7}
+  .sgn.neg{background:#3d1620;color:#ff8fa3}
+  .hint{font-size:10.5px;color:#5f6f67;margin:-6px 0 10px}
   .betline{border-top:1px solid #1a221e;padding-top:11px;margin-top:11px}
   .betline:first-of-type{border-top:none;padding-top:0;margin-top:0}
   .bl-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
@@ -89,6 +95,8 @@
   var PEOPLE = ["Sam","Dan","Cody","Fitz","Bret","Barreto","Seth","Kirk","Doug","Kyle"];
   var ESPN = "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard";
   var KEY = "betoff-admin-v1";
+  var STAKE = 5;             // wager per bet
+  var SCORING = "returned";  // "returned" = money in hand; "winnings" = to-win only
   var state = { date: "20260905", bets: [] };
   var slate = [];
   var current = PEOPLE[0];
@@ -171,7 +179,7 @@
     var mine = state.bets.filter(function (b) { return b.person === current; });
     while (mine.length < 5) {
       var nb = { person: current, gameId: "", teamId: "", oppId: "",
-                 teamAbbr: "", line: "", toWin: "" };
+                 teamAbbr: "", line: "", toWin: "", neg: false };
       state.bets.push(nb); mine.push(nb);
     }
     var html = '<div style="font-size:13px;color:#7d8c85;margin-bottom:10px">' +
@@ -184,9 +192,15 @@
         gameOptions(b.gameId) + '</select>' +
         '<label>Side</label><select data-f="teamId" data-i="' + idx + '">' +
         teamOptions(b.gameId, b.teamId) + '</select>' +
-        '<div class="row2"><div><label>Line (e.g. -13.5)</label>' +
-        '<input type="text" inputmode="decimal" data-f="line" data-i="' + idx +
-        '" value="' + (b.line === "" ? "" : b.line) + '" placeholder="+7.5"></div>' +
+        '<div class="row2"><div><label>Line</label>' +
+        '<div class="signed">' +
+        '<button type="button" class="sgn' + (b.neg ? ' neg' : '') +
+        '" data-sign="' + idx + '">' + (b.neg ? '\u2212' : '+') + '</button>' +
+        '<input type="text" inputmode="decimal" data-f="absline" data-i="' + idx +
+        '" value="' + (b.line === "" ? "" : Math.abs(Number(b.line))) +
+        '" placeholder="7.5"></div>' +
+        '<div class="hint">' + (b.neg ? 'laying points' : 'getting points') +
+        '</div></div>' +
         '<div><label>To win ($)</label>' +
         '<input type="text" inputmode="decimal" data-f="toWin" data-i="' + idx +
         '" value="' + (b.toWin === "" ? "" : b.toWin) + '" placeholder="12.50"></div>' +
@@ -198,7 +212,12 @@
       el.addEventListener("change", function () {
         var b = state.bets[Number(el.dataset.i)];
         var f = el.dataset.f;
-        b[f] = el.value;
+        if (f === "absline") {
+          var v = el.value.replace(/[^0-9.]/g, "");
+          b.line = v === "" ? "" : (b.neg ? "-" : "") + v;
+        } else {
+          b[f] = el.value;
+        }
         if (f === "gameId") { b.teamId = ""; b.oppId = ""; b.teamAbbr = ""; }
         if (f === "teamId") {
           var g = slate.filter(function (x) { return x.id === b.gameId; })[0];
@@ -214,10 +233,21 @@
         renderPeople(); renderSummary();
       });
     });
+    document.querySelectorAll("#editor [data-sign]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var b = state.bets[Number(btn.dataset.sign)];
+        b.neg = !b.neg;
+        if (b.line !== "" && !isNaN(Number(b.line))) {
+          b.line = (b.neg ? "-" : "") + Math.abs(Number(b.line));
+        }
+        save(); renderEditor(); renderSummary();
+      });
+    });
     document.querySelectorAll("#editor [data-clear]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var b = state.bets[Number(btn.dataset.clear)];
-        b.gameId = b.teamId = b.oppId = b.teamAbbr = ""; b.line = ""; b.toWin = "";
+        b.gameId = b.teamId = b.oppId = b.teamAbbr = "";
+        b.line = ""; b.toWin = ""; b.neg = false;
         save(); renderEditor(); renderPeople(); renderSummary();
       });
     });
@@ -246,6 +276,8 @@
     var out = {
       event: "Draft Order Bet-Off",
       date: state.date,
+      stake: STAKE,
+      scoring: state.scoring || SCORING,
       people: PEOPLE,
       bets: state.bets.filter(complete).map(function (b) {
         return { person: b.person, gameId: b.gameId, teamId: b.teamId,
@@ -270,10 +302,11 @@
     try {
       var j = JSON.parse(document.getElementById("in").value);
       state.date = j.date || state.date;
+      state.scoring = j.scoring || SCORING;
       state.bets = (j.bets || []).map(function (b) {
         return { person: b.person, gameId: String(b.gameId), teamId: String(b.teamId),
                  oppId: String(b.oppId), teamAbbr: b.teamAbbr,
-                 line: b.line, toWin: b.toWin };
+                 line: b.line, toWin: b.toWin, neg: Number(b.line) < 0 };
       });
       if (j.date) {
         document.getElementById("date").value =
