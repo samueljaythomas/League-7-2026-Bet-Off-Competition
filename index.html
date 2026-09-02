@@ -272,8 +272,8 @@
     }).join("");
     document.getElementById("board").innerHTML =
       '<div class="card"><div class="hd"><h2>Standings</h2>' +
-      '<p>' + (COUNT_STAKE ? 'Winnings plus returned stake' : 'Winnings only') +
-      ' &middot; losses cost nothing</p></div>' + rows +
+      '<p>' + (COUNT_STAKE ? 'Money in hand after all five bets'
+                           : 'Winnings only') + '</p></div>' + rows +
       '<div class="note">Draft order runs top to bottom. Live figures count bets ' +
       'currently covering but not yet final. ' +
       (COUNT_STAKE ? 'Each win also returns the $' + STAKE + ' stake. ' : '') +
