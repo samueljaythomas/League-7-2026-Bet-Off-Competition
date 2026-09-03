@@ -293,7 +293,7 @@
       '<div class="bi"><b>' + (showPerson ? b.person + " &middot; " : "") +
       b.teamAbbr + " " + sign(b.line) + '</b>' +
       '<i>' + score + (res.note ? " &middot; " + res.note : "") + '</i></div>' +
-      '<div class="bw' + dim + '">' + money(payout(b)) + '</div></div>';
+      '<div class="bw' + dim + '">' + money(Number(b.toWin)) + '</div></div>';
   }
 
   function renderBets(list) {
