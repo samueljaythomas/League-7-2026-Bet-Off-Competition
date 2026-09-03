@@ -98,7 +98,7 @@
 
   <div class="pane on" data-pane="board">
     <div class="seg"><button class="on" data-bsort="total">By total</button>
-      <button data-bsort="max">By biggest live bet</button></div>
+      <button data-bsort="max">By potential today</button></div>
     <div id="board"></div>
   </div>
   <div class="pane" data-pane="bets">
@@ -211,7 +211,7 @@
     var byPerson = {};
     PEOPLE.forEach(function (p) {
       byPerson[p] = { name: p, bets: [], banked: 0, live: 0, won: 0, lost: 0,
-                      covering: 0, pending: 0, push: 0, maxOpen: 0 };
+                      covering: 0, pending: 0, push: 0, openTotal: 0 };
     });
     (data.bets || []).forEach(function (b) {
       var g = games[b.gameId];
@@ -219,11 +219,11 @@
       var row = { bet: b, game: g, res: res };
       var p = byPerson[b.person];
       if (!p) { byPerson[b.person] = p = { name: b.person, bets: [], banked: 0,
-        live: 0, won: 0, lost: 0, covering: 0, pending: 0, push: 0, maxOpen: 0 }; }
+        live: 0, won: 0, lost: 0, covering: 0, pending: 0, push: 0, openTotal: 0 }; }
       p.bets.push(row);
       var stillOpen = res.state === "pending" || res.state === "cover" ||
         res.state === "notcover";
-      if (stillOpen) p.maxOpen = Math.max(p.maxOpen, Number(b.toWin) || 0);
+      if (stillOpen) p.openTotal += payout(b);
       if (res.state === "won") { p.banked += payout(b); p.won++; }
       else if (res.state === "cover") { p.live += payout(b); p.covering++; }
       else if (res.state === "push") { p.banked += COUNT_STAKE ? STAKE : 0; p.push++; }
@@ -233,6 +233,7 @@
     var list = Object.keys(byPerson).map(function (k) { return byPerson[k]; });
     list.forEach(function (p) {
       p.total = p.banked + p.live;
+      p.projected = p.banked + p.openTotal;   // ceiling if every open bet hits
       p.bets.sort(function (x, y) {
         return kickoff(x.bet.gameId) - kickoff(y.bet.gameId);
       });
@@ -270,7 +271,7 @@
     var shown = list;
     var byMax = sortMode === "max";
     if (byMax) {
-      shown = list.slice().sort(function (a, b) { return b.maxOpen - a.maxOpen; });
+      shown = list.slice().sort(function (a, b) { return b.projected - a.projected; });
     }
     var rows = shown.map(function (p) {
       var parts = [];
@@ -285,8 +286,8 @@
         : '<i>' + (parts.join(" &middot; ") || "no bets in") + '</i>';
       var rankTag = byMax ? "" : '<div class="rk">' + p.rank + '</div>';
       var amtBlock = byMax
-        ? '<div class="amt"><b>' + (p.maxOpen > 0 ? money(p.maxOpen) : "&mdash;") +
-          '</b><i>biggest live</i></div>'
+        ? '<div class="amt"><b>' + money(p.projected) +
+          '</b><i>if all opens hit</i></div>'
         : '<div class="amt"><b>' + money(p.total) + '</b><i>' +
           (p.live > 0 ? "incl. live" : "final") + '</i></div>';
       return '<div class="lb' + (byMax ? "" : " p" + (p.rank <= 3 ? p.rank : 0)) + '">' +
@@ -296,16 +297,17 @@
         '</div>' + amtBlock + '</div>';
     }).join("");
     var note = byMax
-      ? '<div class="note">The single largest to-win on each person\'s ' +
-        'bets that haven\'t finished yet &mdash; the most anyone still has in ' +
-        'play from one bet. A dash means nothing they hold is still live.</div>'
+      ? '<div class="note">Each person\'s ceiling for the day: money already ' +
+        'banked, plus every bet that hasn\'t lost yet (pending, covering, or ' +
+        'still chasing) counted as if it hits. The best possible outcome from ' +
+        'here, not a prediction.</div>'
       : '<div class="note">Draft order runs top to bottom. Live figures count bets ' +
         'currently covering but not yet final. ' +
         (COUNT_STAKE ? 'Each win also returns the $' + STAKE + ' stake. ' : '') +
         'Ties break on most winning bets, then biggest single payout.</div>';
     document.getElementById("board").innerHTML =
       '<div class="card"><div class="hd"><h2>Standings</h2>' +
-      '<p>' + (byMax ? "Potential $ still on the board"
+      '<p>' + (byMax ? "Ceiling if every open bet hits"
                      : (COUNT_STAKE ? 'Money in hand after all five bets'
                                     : 'Winnings only')) +
       '</p></div>' + rows + note + '</div>';
