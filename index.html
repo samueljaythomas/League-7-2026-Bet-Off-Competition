@@ -3,91 +3,119 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Draft Order Bet-Off</title>
-<meta name="theme-color" content="#080b0a">
+<title>League #7 Draft Order Competition</title>
+<meta name="theme-color" content="#131316">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Bet-Off">
+<meta name="apple-mobile-web-app-title" content="League #7">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23151517'/%3E%3Ctext x='50' y='68' font-family='-apple-system,Helvetica,Arial,sans-serif' font-size='58' font-weight='800' fill='%23dcb35e' text-anchor='middle'%3E7%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23151517'/%3E%3Ctext x='50' y='68' font-family='-apple-system,Helvetica,Arial,sans-serif' font-size='58' font-weight='800' fill='%23dcb35e' text-anchor='middle'%3E7%3C/text%3E%3C/svg%3E">
 <style>
   *{box-sizing:border-box}
   body{
     margin:0;
-    padding:calc(18px + env(safe-area-inset-top)) 13px calc(40px + env(safe-area-inset-bottom));
-    background:radial-gradient(900px 400px at 50% -180px,#0d3327 0%,transparent 70%),#080b0a;
-    color:#eef4f0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:calc(20px + env(safe-area-inset-top)) 14px calc(42px + env(safe-area-inset-bottom));
+    background:
+      radial-gradient(900px 380px at 50% -190px,rgba(212,175,90,.10) 0%,transparent 70%),
+      #131316;
+    color:#f0eee8;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     -webkit-font-smoothing:antialiased;
   }
   .wrap{max-width:470px;margin:0 auto}
-  h1{font-size:24px;font-weight:800;letter-spacing:-.025em;margin:0}
-  .bar{display:flex;align-items:center;gap:9px;margin:8px 0 15px;font-size:11.5px;color:#7d8c85}
-  .dot{width:7px;height:7px;border-radius:50%;background:#3a4a43;flex:none}
-  .dot.live{background:#28d17c;box-shadow:0 0 0 0 rgba(40,209,124,.7);animation:p 2s infinite}
-  @keyframes p{70%{box-shadow:0 0 0 7px rgba(40,209,124,0)}100%{box-shadow:0 0 0 0 rgba(40,209,124,0)}}
+
+  h1{
+    font-size:21px;font-weight:800;letter-spacing:-.01em;margin:0;line-height:1.25;
+    background:linear-gradient(120deg,#f3d888 0%,#d4af5a 55%,#b8903f 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .rule{height:2px;width:38px;margin:9px 0 12px;border-radius:2px;
+    background:linear-gradient(90deg,#e6c065,#8a6a2a)}
+
+  .bar{display:flex;align-items:center;gap:9px;margin:0 0 16px;font-size:11.5px;
+    color:#8c8d93}
+  .dot{width:7px;height:7px;border-radius:50%;background:#3d3d42;flex:none}
+  .dot.live{background:#39d97a;box-shadow:0 0 0 0 rgba(57,217,122,.65);animation:p 2s infinite}
+  @keyframes p{70%{box-shadow:0 0 0 7px rgba(57,217,122,0)}100%{box-shadow:0 0 0 0 rgba(57,217,122,0)}}
   .bar span{flex:1}
-  .rf{width:28px;height:28px;border-radius:8px;background:#111714;border:1px solid #1f2a25;
-    color:#7d8c85;font-size:15px;font-family:inherit;flex:none}
-  .tabs{display:flex;gap:4px;background:#111714;border:1px solid #1f2a25;border-radius:12px;
-    padding:4px;margin-bottom:14px}
-  .tab{flex:1;padding:9px 4px;border-radius:9px;font-size:12.5px;font-weight:600;
-    color:#7d8c85;border:none;background:none;font-family:inherit}
-  .tab.on{background:#1a9c63;color:#fff}
+  .rf{width:29px;height:29px;border-radius:9px;background:#1c1c1f;border:1px solid #2c2c31;
+    color:#9a9ba1;font-size:15px;font-family:inherit;flex:none;transition:border-color .15s}
+  .rf:active{border-color:#d4af5a;color:#d4af5a}
+
+  .tabs{display:flex;gap:4px;background:#1a1a1d;border:1px solid #2a2a2e;border-radius:13px;
+    padding:4px;margin-bottom:15px;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}
+  .tab{flex:1;padding:9px 4px;border-radius:10px;font-size:12.5px;font-weight:600;
+    color:#8c8d93;border:none;background:none;font-family:inherit;transition:background .15s,color .15s}
+  .tab.on{background:linear-gradient(155deg,#e3c06e,#b98f3a);color:#211a0c;
+    box-shadow:0 2px 8px -2px rgba(201,155,50,.5)}
+
   .pane{display:none}.pane.on{display:block}
-  .card{background:#111714;border:1px solid #1f2a25;border-radius:15px;overflow:hidden;
-    margin-bottom:13px}
-  .hd{padding:13px 15px 10px;border-bottom:1px solid #1f2a25}
-  .hd h2{margin:0;font-size:16px;font-weight:700}
-  .hd p{margin:3px 0 0;font-size:11.5px;color:#7d8c85}
-  .lb{display:flex;align-items:center;gap:11px;padding:12px 14px;border-bottom:1px solid #171f1b;
+
+  .card{background:#1a1a1d;border:1px solid #2a2a2e;border-radius:16px;overflow:hidden;
+    margin-bottom:14px;box-shadow:0 1px 0 rgba(255,255,255,.02) inset,0 6px 18px -12px rgba(0,0,0,.5)}
+  .hd{padding:14px 16px 11px;border-bottom:1px solid #26262a;position:relative}
+  .hd h2{margin:0;font-size:16px;font-weight:700;letter-spacing:-.005em}
+  .hd p{margin:3px 0 0;font-size:11.5px;color:#8c8d93}
+
+  .lb{display:flex;align-items:center;gap:11px;padding:13px 15px;border-bottom:1px solid #232327;
     border-left:3px solid transparent}
   .lb:last-child{border-bottom:none}
-  .lb.p1{border-left-color:#f2c14e;background:linear-gradient(90deg,rgba(242,193,78,.09),transparent 60%)}
-  .lb.p2{border-left-color:#b9c4cc}.lb.p3{border-left-color:#c08a52}
-  .rk{width:20px;font-size:15px;font-weight:800;color:#7d8c85;flex:none}
-  .lb.p1 .rk{color:#f2c14e}
+  .lb.p1{border-left-color:#e0b64f;
+    background:linear-gradient(90deg,rgba(224,182,79,.10),transparent 62%)}
+  .lb.p2{border-left-color:#b7b9bf}
+  .lb.p3{border-left-color:#c3915a}
+  .rk{width:20px;font-size:15px;font-weight:800;color:#8c8d93;flex:none}
+  .lb.p1 .rk{color:#e0b64f}
   .nm{flex:1;min-width:0}
-  .nm b{font-size:15px;font-weight:700;display:block}
-  .nm i{font-style:normal;font-size:10.5px;color:#7d8c85;display:block;margin-top:2px}
+  .nm b{font-size:15px;font-weight:700;display:block;color:#f0eee8}
+  .nm i{font-style:normal;font-size:10.5px;color:#8c8d93;display:block;margin-top:2px}
   .amt{text-align:right;flex:none}
-  .amt b{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;display:block}
-  .amt i{font-style:normal;font-size:9.5px;color:#7d8c85}
-  .live-amt{color:#28d17c}
-  .bet{display:flex;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid #171f1b}
+  .amt b{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;display:block;
+    color:#f0eee8}
+  .amt i{font-style:normal;font-size:9.5px;color:#8c8d93}
+  .live-amt{color:#39d97a}
+
+  .bet{display:flex;align-items:center;gap:9px;padding:11px 15px;border-bottom:1px solid #232327}
   .bet:last-child{border-bottom:none}
   .pill{font-size:8.5px;font-weight:800;padding:3px 6px;border-radius:5px;flex:none;
-    width:52px;text-align:center;letter-spacing:.03em}
-  .won{background:#0f3d28;color:#5ee79f}
-  .lost{background:#3d1620;color:#ff8fa3}
-  .cover{background:#123a2c;color:#3fd48f}
-  .notcover{background:#3a2418;color:#ffab73}
-  .pend{background:#1c2620;color:#7d8c85}
-  .push{background:#1e2733;color:#9fb6d0}
+    width:54px;text-align:center;letter-spacing:.03em}
+  .won{background:#123825;color:#5eeb9a}
+  .lost{background:#3a1620;color:#ff8fa0}
+  .cover{background:#173a2b;color:#4ee39c}
+  .notcover{background:#3a2a14;color:#f0ab5c}
+  .pend{background:#232327;color:#9a9ba1}
+  .push{background:#1d2532;color:#9cb3d4}
   .bi{flex:1;min-width:0}
   .bi b{font-size:13.5px;font-weight:600;display:block;white-space:nowrap;overflow:hidden;
-    text-overflow:ellipsis}
-  .bi i{font-style:normal;font-size:10.5px;color:#7d8c85;display:block;margin-top:1px}
+    text-overflow:ellipsis;color:#f0eee8}
+  .bi i{font-style:normal;font-size:10.5px;color:#8c8d93;display:block;margin-top:1px}
   .bw{text-align:right;flex:none;font-size:14px;font-weight:700;
-    font-variant-numeric:tabular-nums;min-width:48px}
-  .bw.dim{color:#4a5751}
-  .hd{position:relative}
+    font-variant-numeric:tabular-nums;min-width:48px;color:#f0eee8}
+  .bw.dim{color:#5b5c61}
+
   .gscore{float:right;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;
-    color:#eef4f0}
-  .badge.live{position:absolute;top:13px;right:15px;background:#0f3d28;color:#28d17c;
-    font-size:9px;font-weight:800;letter-spacing:.05em;padding:3px 7px;border-radius:5px}
-  .hd .badge.live + h2{padding-right:44px}
-  .empty{padding:32px 18px;text-align:center;font-size:13px;color:#7d8c85}
-  .seg{display:flex;gap:4px;background:#111714;border:1px solid #1f2a25;border-radius:10px;
+    color:#f0eee8}
+  .badge.live{position:absolute;top:14px;right:16px;background:#123825;color:#39d97a;
+    font-size:9px;font-weight:800;letter-spacing:.05em;padding:3px 7px;border-radius:6px}
+  .hd .badge.live + h2{padding-right:46px}
+
+  .empty{padding:34px 18px;text-align:center;font-size:13px;color:#8c8d93}
+
+  .seg{display:flex;gap:4px;background:#1a1a1d;border:1px solid #2a2a2e;border-radius:11px;
     padding:3px;margin-bottom:12px}
-  .seg button{flex:1;padding:7px;border-radius:7px;font-size:12px;font-weight:600;
-    color:#7d8c85;border:none;background:none;font-family:inherit}
-  .seg button.on{background:#1f2a25;color:#eef4f0}
-  .note{padding:11px 15px;font-size:11px;color:#7d8c85;line-height:1.45;
-    border-top:1px solid #171f1b}
-  footer{text-align:center;font-size:10.5px;color:#3f4c46;margin-top:22px}
+  .seg button{flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:600;
+    color:#8c8d93;border:none;background:none;font-family:inherit;transition:background .15s,color .15s}
+  .seg button.on{background:#26262b;color:#e0b64f}
+
+  .note{padding:12px 16px;font-size:11px;color:#8c8d93;line-height:1.5;
+    border-top:1px solid #232327}
+
+  footer{text-align:center;font-size:10.5px;color:#4a4a50;margin-top:24px;letter-spacing:.01em}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Draft Order Bet-Off</h1>
+  <h1>League #7 Draft Order Competition</h1>
+  <div class="rule"></div>
   <div class="bar"><i class="dot" id="dot"></i><span id="status">Loading…</span>
     <button class="rf" id="rf">&#8635;</button></div>
 
@@ -98,7 +126,7 @@
 
   <div class="pane on" data-pane="board">
     <div class="seg"><button class="on" data-bsort="total">By total</button>
-      <button data-bsort="max">By potential today</button></div>
+      <button data-bsort="max">By potential</button></div>
     <div id="board"></div>
   </div>
   <div class="pane" data-pane="bets">
