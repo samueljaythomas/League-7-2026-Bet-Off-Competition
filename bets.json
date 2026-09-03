@@ -60,6 +60,51 @@
       "teamAbbr": "CCU",
       "line": 21,
       "toWin": 9.62
+    },
+    {
+      "person": "Dan",
+      "gameId": "401856636",
+      "teamId": "2",
+      "oppId": "239",
+      "teamAbbr": "AUB",
+      "line": -7.5,
+      "toWin": 9.62
+    },
+    {
+      "person": "Dan",
+      "gameId": "401856777",
+      "teamId": "2132",
+      "oppId": "103",
+      "teamAbbr": "CIN",
+      "line": -7.5,
+      "toWin": 9.62
+    },
+    {
+      "person": "Dan",
+      "gameId": "401858425",
+      "teamId": "249",
+      "oppId": "84",
+      "teamAbbr": "UNT",
+      "line": 40.5,
+      "toWin": 9.34
+    },
+    {
+      "person": "Dan",
+      "gameId": "401856662",
+      "teamId": "2433",
+      "oppId": "344",
+      "teamAbbr": "ULM",
+      "line": 28.5,
+      "toWin": 9.34
+    },
+    {
+      "person": "Dan",
+      "gameId": "401858426",
+      "teamId": "2459",
+      "oppId": "2294",
+      "teamAbbr": "NIU",
+      "line": 31.5,
+      "toWin": 9.34
     }
   ]
 }
