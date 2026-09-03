@@ -148,6 +148,11 @@
   }
 
   function fmtNum(n) { return (Math.round(n * 10) / 10).toString(); }
+  function kickoff(gameId) {
+    var g = games[gameId];
+    return g && g.start ? g.start : Infinity;   // unknown games go last
+  }
+  function byKickoff(a, b) { return kickoff(a) - kickoff(b); }
   function payout(b) { return Number(b.toWin) + (COUNT_STAKE ? STAKE : 0); }
   function money(n) {
     return "$" + n.toFixed(2).replace(/\.00$/, "");
@@ -190,6 +195,7 @@
           list: list,
           state: (st.type || {}).state || "pre",
           detail: (st.type || {}).shortDetail || "",
+          start: new Date(ev.date).getTime() || 0,
           startText: new Date(ev.date).toLocaleTimeString([], {
             hour: "numeric", minute: "2-digit"
           })
@@ -221,7 +227,12 @@
       else if (res.state === "pending") p.pending++;
     });
     var list = Object.keys(byPerson).map(function (k) { return byPerson[k]; });
-    list.forEach(function (p) { p.total = p.banked + p.live; });
+    list.forEach(function (p) {
+      p.total = p.banked + p.live;
+      p.bets.sort(function (x, y) {
+        return kickoff(x.bet.gameId) - kickoff(y.bet.gameId);
+      });
+    });
     list.sort(function (a, b) {
       if (b.total !== a.total) return b.total - a.total;
       var aw = a.won + a.covering, bw = b.won + b.covering;
@@ -314,7 +325,7 @@
       (data.bets || []).forEach(function (b) {
         (byGame[b.gameId] = byGame[b.gameId] || []).push(b);
       });
-      host.innerHTML = Object.keys(byGame).map(function (gid) {
+      host.innerHTML = Object.keys(byGame).sort(byKickoff).map(function (gid) {
         var g = games[gid];
         var rows = byGame[gid].map(function (b) {
           return betRow({ bet: b, game: g, res: evaluate(b, g) }, true);
@@ -329,7 +340,7 @@
   function renderGames() {
     var ids = {};
     (data.bets || []).forEach(function (b) { ids[b.gameId] = true; });
-    var keys = Object.keys(ids);
+    var keys = Object.keys(ids).sort(byKickoff);
     if (!keys.length) {
       document.getElementById("games").innerHTML =
         '<div class="card"><div class="empty">No games yet.</div></div>';
