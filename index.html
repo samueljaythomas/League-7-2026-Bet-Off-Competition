@@ -68,13 +68,12 @@
   .bw{text-align:right;flex:none;font-size:14px;font-weight:700;
     font-variant-numeric:tabular-nums;min-width:48px}
   .bw.dim{color:#4a5751}
-  .gm{padding:12px 14px;border-bottom:1px solid #171f1b}
-  .gm:last-child{border-bottom:none}
-  .gt{display:flex;align-items:center;gap:8px;font-size:13.5px}
-  .gt b{flex:1;font-weight:600}
-  .gsc{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
-  .gst{font-size:10.5px;color:#7d8c85;margin-top:4px}
-  .gst.inplay{color:#28d17c}
+  .hd{position:relative}
+  .gscore{float:right;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;
+    color:#eef4f0}
+  .badge.live{position:absolute;top:13px;right:15px;background:#0f3d28;color:#28d17c;
+    font-size:9px;font-weight:800;letter-spacing:.05em;padding:3px 7px;border-radius:5px}
+  .hd .badge.live + h2{padding-right:44px}
   .empty{padding:32px 18px;text-align:center;font-size:13px;color:#7d8c85}
   .seg{display:flex;gap:4px;background:#111714;border:1px solid #1f2a25;border-radius:10px;
     padding:3px;margin-bottom:12px}
@@ -95,17 +94,18 @@
   <div class="tabs">
     <button class="tab on" data-tab="board">Leaderboard</button>
     <button class="tab" data-tab="bets">All bets</button>
-    <button class="tab" data-tab="games">Games</button>
   </div>
 
-  <div class="pane on" data-pane="board"><div id="board"></div></div>
+  <div class="pane on" data-pane="board">
+    <div class="seg"><button class="on" data-bsort="total">By total</button>
+      <button data-bsort="max">By biggest live bet</button></div>
+    <div id="board"></div>
+  </div>
   <div class="pane" data-pane="bets">
     <div class="seg"><button class="on" data-by="person">By person</button>
       <button data-by="game">By game</button></div>
     <div id="bets"></div>
   </div>
-  <div class="pane" data-pane="games"><div id="games"></div></div>
-
   <footer>Scores from ESPN &middot; refreshes every 45s</footer>
 </div>
 
@@ -117,6 +117,7 @@
   var STAKE = 5;              // wager per bet
   var COUNT_STAKE = false;    // set "scoring":"returned" in bets.json to include it
   var data = null, games = {}, lastOk = null, timer = null, groupBy = "person";
+  var boardSort = "total";
 
   /* ---------- bet evaluation ---------- */
   // Returns: pending | won | lost | push | cover | notcover  (+ margin info)
@@ -210,7 +211,7 @@
     var byPerson = {};
     PEOPLE.forEach(function (p) {
       byPerson[p] = { name: p, bets: [], banked: 0, live: 0, won: 0, lost: 0,
-                      covering: 0, pending: 0, push: 0 };
+                      covering: 0, pending: 0, push: 0, maxOpen: 0 };
     });
     (data.bets || []).forEach(function (b) {
       var g = games[b.gameId];
@@ -218,8 +219,11 @@
       var row = { bet: b, game: g, res: res };
       var p = byPerson[b.person];
       if (!p) { byPerson[b.person] = p = { name: b.person, bets: [], banked: 0,
-        live: 0, won: 0, lost: 0, covering: 0, pending: 0, push: 0 }; }
+        live: 0, won: 0, lost: 0, covering: 0, pending: 0, push: 0, maxOpen: 0 }; }
       p.bets.push(row);
+      var stillOpen = res.state === "pending" || res.state === "cover" ||
+        res.state === "notcover";
+      if (stillOpen) p.maxOpen = Math.max(p.maxOpen, Number(b.toWin) || 0);
       if (res.state === "won") { p.banked += payout(b); p.won++; }
       else if (res.state === "cover") { p.live += payout(b); p.covering++; }
       else if (res.state === "push") { p.banked += COUNT_STAKE ? STAKE : 0; p.push++; }
@@ -255,7 +259,7 @@
     return list;
   }
 
-  function renderBoard(list) {
+  function renderBoard(list, sortMode) {
     var anyBets = (data.bets || []).length > 0;
     if (!anyBets) {
       document.getElementById("board").innerHTML =
@@ -263,7 +267,12 @@
         'Add them in the admin page.</div></div>';
       return;
     }
-    var rows = list.map(function (p) {
+    var shown = list;
+    var byMax = sortMode === "max";
+    if (byMax) {
+      shown = list.slice().sort(function (a, b) { return b.maxOpen - a.maxOpen; });
+    }
+    var rows = shown.map(function (p) {
       var parts = [];
       if (p.won) parts.push(p.won + " won");
       if (p.covering) parts.push(p.covering + " covering");
@@ -274,21 +283,32 @@
         ? '<i>' + money(p.banked) + ' banked <span class="live-amt">+ ' +
           money(p.live) + ' live</span></i>'
         : '<i>' + (parts.join(" &middot; ") || "no bets in") + '</i>';
-      return '<div class="lb p' + (p.rank <= 3 ? p.rank : 0) + '">' +
-        '<div class="rk">' + p.rank + '</div>' +
+      var rankTag = byMax ? "" : '<div class="rk">' + p.rank + '</div>';
+      var amtBlock = byMax
+        ? '<div class="amt"><b>' + (p.maxOpen > 0 ? money(p.maxOpen) : "&mdash;") +
+          '</b><i>biggest live</i></div>'
+        : '<div class="amt"><b>' + money(p.total) + '</b><i>' +
+          (p.live > 0 ? "incl. live" : "final") + '</i></div>';
+      return '<div class="lb' + (byMax ? "" : " p" + (p.rank <= 3 ? p.rank : 0)) + '">' +
+        rankTag +
         '<div class="nm"><b>' + p.name + '</b>' +
         (p.live > 0 ? liveBit : '<i>' + (parts.join(" &middot; ") || "no bets in") + '</i>') +
-        '</div><div class="amt"><b>' + money(p.total) + '</b><i>' +
-        (p.live > 0 ? "incl. live" : "final") + '</i></div></div>';
+        '</div>' + amtBlock + '</div>';
     }).join("");
+    var note = byMax
+      ? '<div class="note">The single largest to-win on each person\'s ' +
+        'bets that haven\'t finished yet &mdash; the most anyone still has in ' +
+        'play from one bet. A dash means nothing they hold is still live.</div>'
+      : '<div class="note">Draft order runs top to bottom. Live figures count bets ' +
+        'currently covering but not yet final. ' +
+        (COUNT_STAKE ? 'Each win also returns the $' + STAKE + ' stake. ' : '') +
+        'Ties break on most winning bets, then biggest single payout.</div>';
     document.getElementById("board").innerHTML =
       '<div class="card"><div class="hd"><h2>Standings</h2>' +
-      '<p>' + (COUNT_STAKE ? 'Money in hand after all five bets'
-                           : 'Winnings only') + '</p></div>' + rows +
-      '<div class="note">Draft order runs top to bottom. Live figures count bets ' +
-      'currently covering but not yet final. ' +
-      (COUNT_STAKE ? 'Each win also returns the $' + STAKE + ' stake. ' : '') +
-      'Ties break on most winning bets, then biggest single payout.</div></div>';
+      '<p>' + (byMax ? "Potential $ still on the board"
+                     : (COUNT_STAKE ? 'Money in hand after all five bets'
+                                    : 'Winnings only')) +
+      '</p></div>' + rows + note + '</div>';
   }
 
   function betRow(r, showPerson) {
@@ -330,44 +350,29 @@
         var rows = byGame[gid].map(function (b) {
           return betRow({ bet: b, game: g, res: evaluate(b, g) }, true);
         }).join("");
-        var sub = g ? (g.state === "pre" ? g.startText : g.detail) : "unknown game";
-        return '<div class="card"><div class="hd"><h2>' +
-          (g ? g.short : gid) + '</h2><p>' + sub + '</p></div>' + rows + '</div>';
+        var sub, score = "";
+        if (!g) {
+          sub = "not on the scoreboard";
+        } else if (g.state === "pre") {
+          sub = g.startText;
+        } else {
+          sub = g.detail;
+          score = g.list.map(function (t) { return t.abbr + " " + t.score; })
+            .join(" &ndash; ");
+        }
+        var badge = g && g.state === "in" ? '<span class="badge live">LIVE</span>' : "";
+        return '<div class="card"><div class="hd">' + badge + '<h2>' +
+          (g ? g.short : "Game " + gid) +
+          (score ? '<span class="gscore">' + score + '</span>' : '') +
+          '</h2><p>' + sub + '</p></div>' + rows + '</div>';
       }).join("");
     }
-  }
-
-  function renderGames() {
-    var ids = {};
-    (data.bets || []).forEach(function (b) { ids[b.gameId] = true; });
-    var keys = Object.keys(ids).sort(byKickoff);
-    if (!keys.length) {
-      document.getElementById("games").innerHTML =
-        '<div class="card"><div class="empty">No games yet.</div></div>';
-      return;
-    }
-    var cards = keys.map(function (gid) {
-      var g = games[gid];
-      if (!g) return '<div class="gm"><div class="gt"><b>Unknown game ' + gid +
-        '</b></div><div class="gst">not on the scoreboard</div></div>';
-      var rows = g.list.map(function (t) {
-        return '<div class="gt"><b>' + t.name + '</b><span class="gsc">' +
-          (g.state === "pre" ? "" : t.score) + '</span></div>';
-      }).join("");
-      var st = g.state === "pre" ? g.startText : g.detail;
-      return '<div class="gm">' + rows + '<div class="gst' +
-        (g.state === "in" ? " inplay" : "") + '">' + st + '</div></div>';
-    }).join("");
-    document.getElementById("games").innerHTML =
-      '<div class="card"><div class="hd"><h2>Games in play</h2>' +
-      '<p>' + keys.length + ' games with money on them</p></div>' + cards + '</div>';
   }
 
   function render() {
     var list = computeTotals();
-    renderBoard(list);
+    renderBoard(list, boardSort);
     renderBets(list);
-    renderGames();
     var live = Object.keys(games).some(function (k) {
       var g = games[k]; return g.state === "in";
     });
@@ -400,11 +405,21 @@
   });
   document.querySelectorAll(".seg button").forEach(function (b) {
     b.addEventListener("click", function () {
-      groupBy = b.dataset.by;
-      document.querySelectorAll(".seg button").forEach(function (x) {
-        x.classList.toggle("on", x === b);
-      });
-      renderBets(computeTotals());
+      if (b.dataset.by) {
+        groupBy = b.dataset.by;
+        var seg = b.closest(".seg");
+        seg.querySelectorAll("button").forEach(function (x) {
+          x.classList.toggle("on", x === b);
+        });
+        renderBets(computeTotals());
+      } else if (b.dataset.bsort) {
+        boardSort = b.dataset.bsort;
+        var seg2 = b.closest(".seg");
+        seg2.querySelectorAll("button").forEach(function (x) {
+          x.classList.toggle("on", x === b);
+        });
+        renderBoard(computeTotals(), boardSort);
+      }
     });
   });
   document.getElementById("rf").addEventListener("click", refresh);
