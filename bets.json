@@ -105,6 +105,51 @@
       "teamAbbr": "NIU",
       "line": 31.5,
       "toWin": 9.34
+    },
+    {
+      "person": "Seth",
+      "gameId": "401856667",
+      "teamId": "251",
+      "oppId": "326",
+      "teamAbbr": "TEX",
+      "line": -29.5,
+      "toWin": 9.54
+    },
+    {
+      "person": "Seth",
+      "gameId": "401858426",
+      "teamId": "2459",
+      "oppId": "2294",
+      "teamAbbr": "NIU",
+      "line": 27.5,
+      "toWin": 11.8
+    },
+    {
+      "person": "Seth",
+      "gameId": "401869960",
+      "teamId": "256",
+      "oppId": "2335",
+      "teamAbbr": "JMU",
+      "line": -13.5,
+      "toWin": 14.8
+    },
+    {
+      "person": "Seth",
+      "gameId": "401856634",
+      "teamId": "151",
+      "oppId": "333",
+      "teamAbbr": "ECU",
+      "line": 20.5,
+      "toWin": 14.7
+    },
+    {
+      "person": "Seth",
+      "gameId": "401858425",
+      "teamId": "249",
+      "oppId": "84",
+      "teamAbbr": "UNT",
+      "line": 27.5,
+      "toWin": 20.8
     }
   ]
 }
