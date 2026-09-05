@@ -88,6 +88,7 @@
   .bi b{font-size:13.5px;font-weight:600;display:block;white-space:nowrap;overflow:hidden;
     text-overflow:ellipsis;color:#f0eee8}
   .bi i{font-style:normal;font-size:10.5px;color:#8c8d93;display:block;margin-top:1px}
+  .clk{color:#e0b64f;font-weight:700}
   .bw{text-align:right;flex:none;font-size:14px;font-weight:700;
     font-variant-numeric:tabular-nums;min-width:48px;color:#f0eee8}
   .bw.dim{color:#5b5c61}
@@ -177,6 +178,22 @@
   }
 
   function fmtNum(n) { return (Math.round(n * 10) / 10).toString(); }
+  // Human-readable live status: "Q3 4:11", "Halftime", "End Q1", "OT 2:30"
+  function liveText(g) {
+    if (!g) return "";
+    if (g.state === "pre") return g.startText;
+    if (g.state === "post") return g.detail || "Final";
+    var nm = g.statusName || "";
+    if (nm.indexOf("HALFTIME") >= 0) return "Halftime";
+    if (nm.indexOf("END_PERIOD") >= 0 || nm.indexOf("END_OF") >= 0) {
+      return g.period > 4 ? "End OT" : "End Q" + g.period;
+    }
+    if (nm.indexOf("DELAYED") >= 0) return "Delayed";
+    var label = g.period > 4 ? (g.period > 5 ? "OT" + (g.period - 4) : "OT")
+                             : "Q" + (g.period || 1);
+    return g.clock ? label + " " + g.clock : (g.detail || label);
+  }
+
   function kickoff(gameId) {
     var g = games[gameId];
     return g && g.start ? g.start : Infinity;   // unknown games go last
@@ -224,6 +241,9 @@
           list: list,
           state: (st.type || {}).state || "pre",
           detail: (st.type || {}).shortDetail || "",
+          clock: st.displayClock || "",
+          period: Number(st.period || 0),
+          statusName: (st.type || {}).name || "",
           start: new Date(ev.date).getTime() || 0,
           startText: new Date(ev.date).toLocaleTimeString([], {
             hour: "numeric", minute: "2-digit"
@@ -351,6 +371,7 @@
     var score = g && g.state !== "pre"
       ? g.list.map(function (t) { return t.abbr + " " + t.score; }).join(" – ")
       : (g ? g.short : "");
+    if (g && g.state === "in") score += ' <span class="clk">' + liveText(g) + '</span>';
     var dim = (res.state === "won" || res.state === "cover") ? "" : " dim";
     return '<div class="bet"><span class="pill ' + cls + '">' + res.label + '</span>' +
       '<div class="bi"><b>' + (showPerson ? b.person + " &middot; " : "") +
@@ -388,7 +409,7 @@
         } else if (g.state === "pre") {
           sub = g.startText;
         } else {
-          sub = g.detail;
+          sub = liveText(g);
           score = g.list.map(function (t) { return t.abbr + " " + t.score; })
             .join(" &ndash; ");
         }
