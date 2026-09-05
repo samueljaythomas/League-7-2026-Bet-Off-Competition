@@ -150,6 +150,276 @@
       "teamAbbr": "UNT",
       "line": 27.5,
       "toWin": 20.8
+    },
+    {
+      "person": "Cody",
+      "gameId": "401858433",
+      "teamId": "2483",
+      "oppId": "68",
+      "teamAbbr": "ORE",
+      "line": -29.5,
+      "toWin": 12.35
+    },
+    {
+      "person": "Cody",
+      "gameId": "401858432",
+      "teamId": "194",
+      "oppId": "2050",
+      "teamAbbr": "OSU",
+      "line": -59.5,
+      "toWin": 17.7
+    },
+    {
+      "person": "Cody",
+      "gameId": "401856778",
+      "teamId": "204",
+      "oppId": "248",
+      "teamAbbr": "ORST",
+      "line": 24.5,
+      "toWin": 7.7
+    },
+    {
+      "person": "Cody",
+      "gameId": "401858426",
+      "teamId": "2459",
+      "oppId": "2294",
+      "teamAbbr": "NIU",
+      "line": 28.5,
+      "toWin": 11
+    },
+    {
+      "person": "Cody",
+      "gameId": "401864499",
+      "teamId": "2230",
+      "oppId": "2449",
+      "teamAbbr": "FOR",
+      "line": 41.5,
+      "toWin": 9.46
+    },
+    {
+      "person": "Kyle",
+      "gameId": "401862701",
+      "teamId": "349",
+      "oppId": "2803",
+      "teamAbbr": "ARMY",
+      "line": -37.5,
+      "toWin": 9.62
+    },
+    {
+      "person": "Kyle",
+      "gameId": "401864496",
+      "teamId": "2005",
+      "oppId": "2184",
+      "teamAbbr": "AFA",
+      "line": -28.5,
+      "toWin": 9.16
+    },
+    {
+      "person": "Kyle",
+      "gameId": "401862696",
+      "teamId": "2426",
+      "oppId": "119",
+      "teamAbbr": "NAVY",
+      "line": -30.5,
+      "toWin": 9.34
+    },
+    {
+      "person": "Kyle",
+      "gameId": "401858425",
+      "teamId": "249",
+      "oppId": "84",
+      "teamAbbr": "UNT",
+      "line": 40.5,
+      "toWin": 9.46
+    },
+    {
+      "person": "Kyle",
+      "gameId": "401856634",
+      "teamId": "151",
+      "oppId": "333",
+      "teamAbbr": "ECU",
+      "line": 27.5,
+      "toWin": 10
+    },
+    {
+      "person": "Barreto",
+      "gameId": "401856778",
+      "teamId": "204",
+      "oppId": "248",
+      "teamAbbr": "ORST",
+      "line": 21,
+      "toWin": 9.23
+    },
+    {
+      "person": "Barreto",
+      "gameId": "401856634",
+      "teamId": "333",
+      "oppId": "151",
+      "teamAbbr": "ALA",
+      "line": -27.5,
+      "toWin": 8.93
+    },
+    {
+      "person": "Barreto",
+      "gameId": "401856665",
+      "teamId": "2579",
+      "oppId": "2309",
+      "teamAbbr": "SC",
+      "line": -35.5,
+      "toWin": 9.46
+    },
+    {
+      "person": "Barreto",
+      "gameId": "401864499",
+      "teamId": "2230",
+      "oppId": "2449",
+      "teamAbbr": "FOR",
+      "line": 41.5,
+      "toWin": 9.46
+    },
+    {
+      "person": "Barreto",
+      "gameId": "401856667",
+      "teamId": "326",
+      "oppId": "251",
+      "teamAbbr": "TXST",
+      "line": 29.5,
+      "toWin": 9.54
+    },
+    {
+      "person": "Fitz",
+      "gameId": "401856634",
+      "teamId": "333",
+      "oppId": "151",
+      "teamAbbr": "ALA",
+      "line": -34.5,
+      "toWin": 13.8
+    },
+    {
+      "person": "Fitz",
+      "gameId": "401858434",
+      "teamId": "213",
+      "oppId": "276",
+      "teamAbbr": "PSU",
+      "line": -31.5,
+      "toWin": 16.88
+    },
+    {
+      "person": "Fitz",
+      "gameId": "401856778",
+      "teamId": "248",
+      "oppId": "204",
+      "teamAbbr": "HOU",
+      "line": -23.5,
+      "toWin": 10.9
+    },
+    {
+      "person": "Fitz",
+      "gameId": "401858430",
+      "teamId": "158",
+      "oppId": "195",
+      "teamAbbr": "NEB",
+      "line": -27.5,
+      "toWin": 11.75
+    },
+    {
+      "person": "Fitz",
+      "gameId": "401869960",
+      "teamId": "256",
+      "oppId": "2335",
+      "teamAbbr": "JMU",
+      "line": -20.5,
+      "toWin": 26.15
+    },
+    {
+      "person": "Bret",
+      "gameId": "401856667",
+      "teamId": "251",
+      "oppId": "326",
+      "teamAbbr": "TEX",
+      "line": -29.5,
+      "toWin": 9.54
+    },
+    {
+      "person": "Bret",
+      "gameId": "401858433",
+      "teamId": "2483",
+      "oppId": "68",
+      "teamAbbr": "ORE",
+      "line": -24.5,
+      "toWin": 9.46
+    },
+    {
+      "person": "Bret",
+      "gameId": "401858434",
+      "teamId": "213",
+      "oppId": "276",
+      "teamAbbr": "PSU",
+      "line": -23.5,
+      "toWin": 9.76
+    },
+    {
+      "person": "Bret",
+      "gameId": "401856660",
+      "teamId": "99",
+      "oppId": "228",
+      "teamAbbr": "LSU",
+      "line": -10,
+      "toWin": 9.62
+    },
+    {
+      "person": "Bret",
+      "gameId": "401858431",
+      "teamId": "2571",
+      "oppId": "77",
+      "teamAbbr": "SDST",
+      "line": 12.5,
+      "toWin": 9.62
+    },
+    {
+      "person": "Kirk",
+      "gameId": "401858207",
+      "teamId": "193",
+      "oppId": "221",
+      "teamAbbr": "M-OH",
+      "line": 1.5,
+      "toWin": 27.7
+    },
+    {
+      "person": "Kirk",
+      "gameId": "401856667",
+      "teamId": "251",
+      "oppId": "326",
+      "teamAbbr": "TEX",
+      "line": -27.5,
+      "toWin": 8.52
+    },
+    {
+      "person": "Kirk",
+      "gameId": "401856634",
+      "teamId": "333",
+      "oppId": "151",
+      "teamAbbr": "ALA",
+      "line": -28.5,
+      "toWin": 9.95
+    },
+    {
+      "person": "Kirk",
+      "gameId": "401858433",
+      "teamId": "2483",
+      "oppId": "68",
+      "teamAbbr": "ORE",
+      "line": -20.5,
+      "toWin": 7.63
+    },
+    {
+      "person": "Kirk",
+      "gameId": "401856636",
+      "teamId": "2",
+      "oppId": "239",
+      "teamAbbr": "AUB",
+      "line": -3.5,
+      "toWin": 7.61
     }
   ]
 }
