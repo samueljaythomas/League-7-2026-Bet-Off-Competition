@@ -2,7 +2,7 @@
   "event": "Draft Order Bet-Off",
   "date": "20260905",
   "stake": 5,
-  "scoring": "returned",
+  "scoring": "winnings",
   "people": [
     "Sam",
     "Dan",
